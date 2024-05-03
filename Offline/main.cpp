@@ -1,3 +1,4 @@
+#include "./include/simhash/Simhasher.hpp"
 #include "./include/DictionaryGenerator.h"
 #include "./include/WebPageGenerator.h"
 #include "./include/WordQuery.h"
@@ -72,11 +73,6 @@ int main(int argc, char **argv)
     std::string DictionaryFilepath = parse["DictionaryFilepath"];
     WebPageGenerator ge(parse_dir, DictionaryFilepath, IndexDictionaryFilepath);
     ge.parse();
-    in.close();
-    in.open(DictionaryFilepath, std::ios::in);
-    char buf[4096];
-    in.read(buf, 1994);
-    buf[1994] = '\0';
-    std::cout << buf << "\n";
+    ge.removeDuplicates();
     return 0;
 }

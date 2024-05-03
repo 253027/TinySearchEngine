@@ -85,8 +85,9 @@ void WebPageGenerator::parse()
                 // 将文档打印到 printer 对象，其中第一个参数为 true 表示格式化输出
                 res.Print(&printer);
                 // 将格式化后的字符串输出到标准输出
+                // dicout
                 dicout << printer.CStr() << "\n";
-                long long size = strlen(printer.CStr());
+                long long size = strlen(printer.CStr()) + 1;
                 indexdicout << (index - 1) << " " << sum << " " << size << std::endl;
                 sum += size;
             }
@@ -96,4 +97,64 @@ void WebPageGenerator::parse()
     dfs(_dirpath);
     dicout.close();
     indexdicout.close();
+}
+
+void WebPageGenerator::removeDuplicates()
+{
+    using PIS = std::pair<uint64_t, std::string>;
+    using PSI = std::pair<std::string, double>;
+    std::vector<PIS> hash;
+    std::vector<PSI> top_word;
+    std::ifstream in;
+    std::ifstream dictionary;
+    simhash::Simhasher work("./include/simhash/dict/jieba.dict.utf8",
+                            "./include/simhash/dict/hmm_model.utf8",
+                            "./include/simhash/dict/idf.utf8",
+                            "./include/simhash/dict/stop_words.utf8");
+    in.open(_indexDicPath, std::ios::in);
+    ERROR_CHECK(in.is_open() == false, "open %s falied", _indexDicPath.c_str());
+    dictionary.open(_dicPath, std::ios::in);
+    ERROR_CHECK(dictionary.is_open() == false, "open %s failed", _dicPath.c_str());
+    for (std::string line; std::getline(in, line);)
+    {
+        std::istringstream is(line);
+        long long pos, len, id;
+        is >> id >> pos >> len;
+        dictionary.seekg(pos);
+        std::string buf(len, '\0');
+        dictionary.read(buf.data(), len);
+        // work.extract(buf, top_word, 10ULL);
+        uint64_t p = 0;
+        work.make(buf, 10ULL, p);
+        bool ok = true;
+        for (int i = 0; i < hash.size(); i++)
+        {
+            if (!simhash::Simhasher::isEqual(hash[i].first, p, 3))
+                continue;
+            ok = false;
+            break;
+        }
+        if (ok)
+            hash.push_back(std::make_pair(p, buf));
+    }
+
+    using namespace tinyxml2;
+    dictionary.close();
+    int last_loc = std::find(_dicPath.rbegin(), _dicPath.rend(), '/') - _dicPath.rbegin();
+    std::ofstream copy;
+    copy.open(_dicPath.substr(0, _dicPath.size() - last_loc) + "temp.dat", std::ios::out | std::ios::trunc);
+    ERROR_CHECK(copy.is_open() == false, "create backupfile failed");
+    std::ofstream dicout;
+    dicout.open(_indexDicPath, std::ios::trunc | std::ios::out);
+    ERROR_CHECK(dicout.is_open() == false, "crete backupfile index failed");
+    long long pos = 0;
+    for (int i = 0; i < hash.size(); i++)
+    {
+
+        XMLDocument doc;
+        copy << hash[i].second;
+        dicout << i << " " << pos << " " << hash[i].second.size() << "\n";
+        pos += hash[i].second.size();
+    }
+    copy.close();
 }
