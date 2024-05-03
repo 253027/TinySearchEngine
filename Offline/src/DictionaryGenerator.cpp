@@ -66,11 +66,11 @@ void DictionaryGenerator::parseEnglish(const std::string &directory_path)
 
 void DictionaryGenerator::parseChinese(const std::string &directory_path)
 {
-    const char *const DICT_PATH = "../include/cppjieba/dict/jieba.dict.utf8";
-    const char *const HMM_PATH = "../include/cppjieba/dict/hmm_model.utf8";
-    const char *const USER_DICT_PATH = "../include/cppjieba/dict/user.dict.utf8";
-    const char *const IDF_PATH = "../include/cppjieba/dict/idf.utf8";
-    const char *const STOP_WORD_PATH = "../include/cppjieba/dict/stop_words.utf8";
+    const char *const DICT_PATH = "./include/cppjieba/dict/jieba.dict.utf8";
+    const char *const HMM_PATH = "./include/cppjieba/dict/hmm_model.utf8";
+    const char *const USER_DICT_PATH = "./include/cppjieba/dict/user.dict.utf8";
+    const char *const IDF_PATH = "./include/cppjieba/dict/idf.utf8";
+    const char *const STOP_WORD_PATH = "./include/cppjieba/dict/stop_words.utf8";
     cppjieba::Jieba jieba(DICT_PATH, HMM_PATH, USER_DICT_PATH, IDF_PATH, STOP_WORD_PATH);
 
     std::unordered_set<std::string> m_stop;
@@ -79,7 +79,7 @@ void DictionaryGenerator::parseChinese(const std::string &directory_path)
 
     // 预处理分隔符
     std::string line;
-    std::ifstream in("../include/cppjieba/dict/stop_words.utf8");
+    std::ifstream in("./include/cppjieba/dict/stop_words.utf8");
     ERROR_CHECK(in.is_open() == false, "open stop_words.utf8 failed");
     for (int i = 0; i < 180; i++)
     {
