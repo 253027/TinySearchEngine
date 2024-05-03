@@ -1,9 +1,11 @@
 #include "./include/DictionaryGenerator.h"
+#include "./include/WebPageGenerator.h"
 #include "./include/WordQuery.h"
 #include "./include/utility.h"
 #include <nlohmann/json.hpp>
+#include "./include/tinyxml2.h"
 
-// // 创建索引字典文件
+// 创建索引字典文件
 // int main(int argc, char **argv)
 // {
 //     ERROR_CHECK(argc != 3, "args error which need 2 args : configuration file path, 1(chinese), 0 (english)");
@@ -40,21 +42,41 @@
 // }
 
 // 字典查询文件
+// int main(int argc, char **argv)
+// {
+//     ERROR_CHECK(argc != 2, "args error which need 2 args : configuration file path");
+//
+//     std::ifstream in(argv[1]);
+//     nlohmann::json parse;
+//     in >> parse;
+//     std::string chinese_store = parse["ChineseStoreFilePath"];
+//     std::string chinese_store_index = parse["ChineseIndexStoreFilePath"];
+//     std::string english_stroe = parse["EnglishStoreFilePath"];
+//     std::string english_index_store = parse["EnglishIndexStoreFilePath"];
+//     WordQuery query;
+//     query.Initial(english_index_store, english_stroe, chinese_store_index, chinese_store);
+//     std::vector<string> res = query.query("人民");
+//     for (auto &x : res)
+//         std::cout << x << "\n";
+//     return 0;
+// }
+
 int main(int argc, char **argv)
 {
-    ERROR_CHECK(argc != 2, "args error which need 2 args : configuration file path");
-
+    ERROR_CHECK(argc != 2, "args error which need one args : configuration file path");
     std::ifstream in(argv[1]);
     nlohmann::json parse;
     in >> parse;
-    std::string chinese_store = parse["ChineseStoreFilePath"];
-    std::string chinese_store_index = parse["ChineseIndexStoreFilePath"];
-    std::string english_stroe = parse["EnglishStoreFilePath"];
-    std::string english_index_store = parse["EnglishIndexStoreFilePath"];
-    WordQuery query;
-    query.Initial(english_index_store, english_stroe, chinese_store_index, chinese_store);
-    std::vector<string> res = query.query("hi");
-    for (auto &x : res)
-        std::cout << x << "\n";
+    std::string parse_dir = parse["ParseDirPath"];
+    std::string IndexDictionaryFilepath = parse["IndexDictionaryFilepath"];
+    std::string DictionaryFilepath = parse["DictionaryFilepath"];
+    WebPageGenerator ge(parse_dir, DictionaryFilepath, IndexDictionaryFilepath);
+    ge.parse();
+    in.close();
+    in.open(DictionaryFilepath, std::ios::in);
+    char buf[4096];
+    in.read(buf, 1994);
+    buf[1994] = '\0';
+    std::cout << buf << "\n";
     return 0;
 }
