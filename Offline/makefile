@@ -31,7 +31,7 @@ endif
 LDLIBS := -lcrypt
 
 # 链接生成最终的server可执行文件
-DictionaryGenerator: $(OBJ)
+main: $(OBJ)
 	$(CC) $^ -o $@ $(CFLAGS) $(LDLIBS)
 
 # 模式规则，从%.c生成%.o
