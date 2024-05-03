@@ -28,7 +28,7 @@ void WebPageGenerator::parse()
             {
                 dfs(t->d_name);
                 continue;
-            };
+            }
             std::string filename = filepath + "/" + t->d_name;
 
             XMLDocument doc;
@@ -140,21 +140,36 @@ void WebPageGenerator::removeDuplicates()
 
     using namespace tinyxml2;
     dictionary.close();
+
     int last_loc = std::find(_dicPath.rbegin(), _dicPath.rend(), '/') - _dicPath.rbegin();
+    std::string copy_filename = _dicPath.substr(0, _dicPath.size() - last_loc) + "temp.dat";
     std::ofstream copy;
-    copy.open(_dicPath.substr(0, _dicPath.size() - last_loc) + "temp.dat", std::ios::out | std::ios::trunc);
+    copy.open(copy_filename, std::ios::out | std::ios::trunc);
     ERROR_CHECK(copy.is_open() == false, "create backupfile failed");
+
     std::ofstream dicout;
     dicout.open(_indexDicPath, std::ios::trunc | std::ios::out);
     ERROR_CHECK(dicout.is_open() == false, "crete backupfile index failed");
+
     long long pos = 0;
     for (int i = 0; i < hash.size(); i++)
     {
-
         XMLDocument doc;
-        copy << hash[i].second;
+        doc.Parse(hash[i].second.c_str());
+        XMLElement *root = doc.FirstChildElement("doc")->FirstChildElement("id");
+        root->SetText(std::to_string(i).c_str());
+        // 创建一个 XMLPrinter 对象
+        tinyxml2::XMLPrinter printer;
+        // 将文档打印到 printer 对象，其中第一个参数为 true 表示格式化输出
+        doc.Print(&printer);
+        // 将格式化后的字符串输出到标准输出
+        copy << printer.CStr() << "\n";
         dicout << i << " " << pos << " " << hash[i].second.size() << "\n";
         pos += hash[i].second.size();
     }
     copy.close();
+    dicout.close();
+
+    ::unlink(_dicPath.c_str());
+    ERROR_CHECK(::rename(copy_filename.c_str(), _dicPath.c_str()) != 0, "rename ripepage.dat failed.");
 }
