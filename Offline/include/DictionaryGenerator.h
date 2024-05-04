@@ -19,9 +19,9 @@ class DictionaryGenerator
 {
 public:
     DictionaryGenerator(const std::string &filepath);
-    // parset all english language files and generate the frequence of the words into a file
+    // parset all language files and generate the frequence of the words into a file
     void parse();
-    // create the index directory of English and stored
+    // create the index directory
     void createIndexDirectory();
 
 private:
