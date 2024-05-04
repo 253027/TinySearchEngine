@@ -1,8 +1,13 @@
 #include "../include/WebPageGenerator.h"
 #include "../include/utility.h"
 
-WebPageGenerator::WebPageGenerator(const std::string &dirpath, const std::string &dicPath, const std::string &indexDicPath)
-    : _dirpath(dirpath), _dicPath(dicPath), _indexDicPath(indexDicPath) {}
+WebPageGenerator::WebPageGenerator(const std::string &filepath)
+    : config(new Configuration(filepath))
+{
+    _dirpath = config->getFilePath("parseDirectoryPath");
+    _dicPath = config->getFilePath("storedFilePath");
+    _indexDicPath = config->getFilePath("indexStoreFilePath");
+}
 
 void WebPageGenerator::parse()
 {

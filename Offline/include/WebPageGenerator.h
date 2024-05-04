@@ -9,17 +9,19 @@
 #include <algorithm>
 #include <regex>
 #include <fstream>
+#include <memory>
 #include <iostream>
 #include <math.h>
 #include <vector>
 #include <utility>
+#include "./Configuration.h"
 #include "./tinyxml2.h"
 #include "./cppjieba/Jieba.hpp"
 
 class WebPageGenerator
 {
 public:
-    WebPageGenerator(const std::string &dirpath, const std::string &dicPath, const std::string &indexDicPath);
+    WebPageGenerator(const std::string &filepath);
 
     void parse();
 
@@ -29,6 +31,8 @@ public:
 
 private:
     double idf(int page_nums, int df_frequence);
+
+    std::shared_ptr<Configuration> config;
 
     std::vector<std::tuple<int, int, int>> memo;
     // 处理语料库
