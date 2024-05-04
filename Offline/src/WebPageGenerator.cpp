@@ -164,12 +164,112 @@ void WebPageGenerator::removeDuplicates()
         doc.Print(&printer);
         // 将格式化后的字符串输出到标准输出
         copy << printer.CStr() << "\n";
-        dicout << i << " " << pos << " " << hash[i].second.size() << "\n";
-        pos += hash[i].second.size();
+        int len = strlen(printer.CStr()) + 1;
+        dicout << i << " " << pos << " " << len << "\n";
+        pos += len;
     }
     copy.close();
     dicout.close();
 
     ::unlink(_dicPath.c_str());
     ERROR_CHECK(::rename(copy_filename.c_str(), _dicPath.c_str()) != 0, "rename ripepage.dat failed.");
+}
+
+void WebPageGenerator::createInvertIndex()
+{
+    // 网页库
+    std::ifstream dictionary;
+    dictionary.open(_dicPath, std::ios::in);
+    ERROR_CHECK(dictionary.is_open() == false, "open % failed\n", _dicPath.c_str());
+    // 网页偏移库
+    std::ifstream index_dictionary;
+    index_dictionary.open(STOP_WORD_PATH, std::ios::in);
+    ERROR_CHECK(index_dictionary.is_open() == false, "open %s failed\n", STOP_WORD_PATH);
+    // 倒排索引库
+    int last_loc = std::find(_dicPath.rbegin(), _dicPath.rend(), '/') - _dicPath.rbegin();
+    std::string invert_index_filepath = _dicPath.substr(0, _dicPath.size() - last_loc) + "inverted_index.dat";
+    std::ofstream invert_index;
+    invert_index.open(invert_index_filepath, std::ios::out | std::ios::trunc);
+    ERROR_CHECK(invert_index.is_open() == false, "open %s failed\n", invert_index_filepath.c_str());
+
+    last_loc = 0;
+    std::unordered_map<std::string, int> total;
+    // 每篇文档的词频
+    std::unordered_map<int, std::unordered_map<std::string, int>> current;
+
+    // 加载停用词数据结构
+    std::unordered_set<std::string> stop_words;
+    for (std::string line; std::getline(index_dictionary, line);)
+        stop_words.insert(line);
+    stop_words.insert(std::string(1, '\n'));
+    index_dictionary.close();
+    // 加载分词文件
+    cppjieba::Jieba jieba(DICT_PATH, HMM_PATH, USER_DICT_PATH, IDF_PATH, STOP_WORD_PATH);
+
+    index_dictionary.open(_indexDicPath, std::ios::in);
+    ERROR_CHECK(index_dictionary.is_open() == false, "open %s failed", _indexDicPath.c_str());
+
+    // 先统计所有单词
+    for (std::string line; std::getline(index_dictionary, line);)
+    {
+        std::istringstream is(line);
+        long long a, b, c;
+        is >> a >> b >> c;
+        std::string buf;
+        buf.resize(c, '\0');
+        dictionary.seekg(b);
+        dictionary.read(buf.data(), c);
+        std::vector<std::string> words; // 分词结果存储位置
+        jieba.Cut(buf, words, true);
+        int i = -1;
+        for (int j = 0; j < words.size(); j++)
+        {
+            if (stop_words.count(words[j]))
+                continue;
+            words[++i] = words[j];
+        }
+        words.resize(i + 1);
+        for (int j = 0; j < words.size(); j++)
+        {
+            ++total[words[j]];
+            ++current[a][words[j]];
+        }
+        ++last_loc; // 统计文章总行数
+    }
+
+    std::unordered_map<std::string, std::set<std::pair<int, double>>> res;
+
+    for (auto &x : current)
+    {
+        double sum = 0;
+        std::vector<double> weight;
+        auto &id = x.first;
+        auto &content = x.second;
+        for (auto &t : content)
+        {
+            double val = t.second * idf(last_loc, total[t.first]);
+            sum += val * val, weight.push_back(val);
+        }
+        int index = 0;
+        sum = sqrt(sum);
+        for (auto &x : content)
+            res[x.first].insert(std::make_pair(id, weight[index++] / sum));
+    }
+
+    for (auto &x : res)
+    {
+        invert_index << x.first;
+        for (auto &range : x.second)
+            invert_index << " " << range.first << " " << range.second;
+        invert_index << "\n";
+    }
+
+    dictionary.close();
+    index_dictionary.close();
+    invert_index.close();
+}
+
+double WebPageGenerator::idf(int page_nums, int df_frequence)
+{
+    return ::log2((double)page_nums / (df_frequence + 1));
 }

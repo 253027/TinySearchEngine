@@ -10,25 +10,26 @@
 #include <unordered_set>
 #include <functional>
 #include <unordered_map>
-#include "./cppjieba/Jieba.hpp"
+#include <memory>
+#include "./EnglishSpilt.h"
+#include "./JieBaSpilt.h"
+#include "./Configuration.h"
 
 class DictionaryGenerator
 {
 public:
     DictionaryGenerator(const std::string &filepath);
-
-    DictionaryGenerator(const std::string &stop_words_filepath, const std::string &filepath);
     // parset all english language files and generate the frequence of the words into a file
-    void parseEnglish(const std::string &directory_path);
-    // parset all chinese language files and generate the frequence of the words into a file
-    void parseChinese(const std::string &directory_path);
+    void parse();
     // create the index directory of English and stored
-    void createIndexDirectory(const std::string &fileapth);
+    void createIndexDirectory();
 
 private:
-    std::string storefilepath;
+    void recursionParse(const std::string &filepath);
 
-    std::unordered_set<std::string> _stop_words;
+    std::shared_ptr<SpiltTool> tool;
+
+    std::shared_ptr<Configuration> config;
 
     std::unordered_map<std::string, int> count;
 };
