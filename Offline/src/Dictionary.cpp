@@ -187,3 +187,20 @@ std::string Dictionary::getMinIndex(std::unordered_set<std::string> &query, std:
     }
     return name;
 }
+
+Dictionary::value::value(const int &a, const int &b, const std::string &c)
+    : mid_dis(a), mid_freq(b), word(c)
+{
+    ;
+}
+
+bool Dictionary::cmp::operator()(const struct value &a, const struct value &b) const
+{
+    if (a.mid_dis == b.mid_dis)
+    {
+        if (a.mid_freq == b.mid_freq)
+            return a.word > b.word;
+        return a.mid_freq > b.mid_freq;
+    }
+    return a.mid_dis > b.mid_dis;
+}

@@ -57,21 +57,12 @@ private:
     {
         int mid_dis, mid_freq;
         std::string word;
-        value(const int &a, const int &b, const std::string &c) : mid_dis(a), mid_freq(b), word(c) {}
+        value(const int &a, const int &b, const std::string &c);
     };
 
     struct cmp
     {
-        bool operator()(const struct value &a, const struct value &b) const
-        {
-            if (a.mid_dis == b.mid_dis)
-            {
-                if (a.mid_freq == b.mid_freq)
-                    return a.word > b.word;
-                return a.mid_freq > b.mid_freq;
-            }
-            return a.mid_dis > b.mid_dis;
-        }
+        bool operator()(const struct value &a, const struct value &b) const;
     };
 };
 
