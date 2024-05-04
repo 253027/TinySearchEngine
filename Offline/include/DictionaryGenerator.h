@@ -5,10 +5,8 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <string>
-#include <iostream>
 #include <fstream>
 #include <unordered_set>
-#include <functional>
 #include <unordered_map>
 #include <memory>
 #include "./EnglishSpilt.h"
@@ -19,10 +17,10 @@ class DictionaryGenerator
 {
 public:
     DictionaryGenerator(const std::string &filepath);
-    // parset all language files and generate the frequence of the words into a file
+
     void parse();
-    // create the index directory
-    void createIndexDirectory();
+
+    void createIndexDictionary();
 
 private:
     void recursionParse(const std::string &filepath);

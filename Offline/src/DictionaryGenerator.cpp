@@ -25,7 +25,7 @@ void DictionaryGenerator::parse()
     file.close();
 }
 
-void DictionaryGenerator::createIndexDirectory()
+void DictionaryGenerator::createIndexDictionary()
 {
     int line = 0;
     std::string filepath = config->getFilePath("indexStoreFilePath");
