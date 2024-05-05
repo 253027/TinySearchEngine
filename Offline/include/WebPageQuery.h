@@ -18,6 +18,8 @@ public:
     std::string query(const std::string &text);
 
 private:
+    std::vector<std::pair<int, double>> get(const std::string &text);
+
     std::vector<std::pair<std::string, double>> IDF(const std::string &word);
 
     void loadIndexFile();
