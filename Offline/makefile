@@ -2,7 +2,7 @@
 ROOT_DIR := .
 
 # 根目录的源文件，确保包括
-ROOT_SRC := main.cpp
+ROOT_SRC := server.cpp
 
 # 包含源文件的子目录列表
 SUBDIRS := src
@@ -22,7 +22,7 @@ OBJ := $(SRC:.cpp=.o)
 
 # 编译器和编译选项
 CC := g++
-CFLAGS := -g #-fsanitize=address -lpthread
+CFLAGS := #-g -fsanitize=address -lpthread
 ifdef _DEBUG
     CFLAGS += -D _DEBUG
 endif
@@ -31,7 +31,7 @@ endif
 LDLIBS := -lcrypt
 
 # 链接生成最终的server可执行文件
-main: $(OBJ)
+server: $(OBJ)
 	$(CC) $^ -o $@ $(CFLAGS) $(LDLIBS)
 
 # 模式规则，从%.c生成%.o
