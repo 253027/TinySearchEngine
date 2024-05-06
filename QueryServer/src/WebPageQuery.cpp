@@ -15,6 +15,8 @@ std::string WebPageQuery::query(const std::string &text)
     nlohmann::ordered_json res;
     int index = 0;
     auto nums = get(text);
+    if (nums.size() <= 0)
+        return "";
     std::vector<int> id(nums.size());
     std::vector<std::pair<std::string, std::string>> memo;
     std::iota(id.begin(), id.end(), 0);

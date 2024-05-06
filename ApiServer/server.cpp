@@ -44,7 +44,6 @@ void PrivateProtocalCallback(PrivateTask *task)
         js["id"] = std::to_string(*(int *)body);
         js["content"] = std::string((char *)body + 4, size - 4);
         std::string res = js.dump();
-        std::cout << res << "\n";
         http_task->get_resp()->append_output_body(res.data(), res.size());
     }
     else
@@ -72,8 +71,8 @@ void process(WFHttpTask *task)
 
     using NTF = WFNetworkTaskFactory<PrivateRequest, PrivateResponse>;
 
-    PrivateTask *tcp_task = NTF::create_client_task(TT_TCP, "tcp://1.94.134.185:9190", 0, PrivateProtocalCallback);
-    // PrivateTask *tcp_task = NTF::create_client_task(TT_TCP, "tcp://127.0.0.1:9191", 0, PrivateProtocalCallback);
+    // PrivateTask *tcp_task = NTF::create_client_task(TT_TCP, "tcp://1.94.134.185:9190", 1, PrivateProtocalCallback);
+    PrivateTask *tcp_task = NTF::create_client_task(TT_TCP, "tcp://127.0.0.1:9191", 0, PrivateProtocalCallback);
     tcp_task->get_req()->setMessageBody(buf, sizeof(buf));
     tcp_task->user_data = task;
 
@@ -95,8 +94,13 @@ int main()
     //     dup(0);
     //     dup(0);
 
+    struct WFServerParams params = HTTP_SERVER_PARAMS_DEFAULT;
+    /* for safety, limit request size to 8MB. */
+    params.request_size_limit = 8 * 1024 * 1024;
+    params.peer_response_timeout = 100;
+
     signal(SIGINT, singal_handel);
-    WFHttpServer server(&process);
+    WFHttpServer server(&params, &process);
     server.start(9190);
     wait_group.wait();
     return 0;

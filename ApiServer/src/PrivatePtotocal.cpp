@@ -78,6 +78,7 @@ int PrivateProtocal::encode(struct iovec vectors[], int max)
 
 int PrivateProtocal::append(const void *buf, size_t size)
 {
+    std::cout << size << "\n";
     // 获取头部信息直到获取完毕
     if (this->head_received < 4)
     {
