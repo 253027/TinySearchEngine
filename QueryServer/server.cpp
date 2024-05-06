@@ -26,6 +26,7 @@ void task(void *eventloop, int socket, int type, const std::string &query)
         res = Dictionary::GetInstance()->query(query), type = 100;
     else if (type == 2)
         res = webquery.query(query), type = 200;
+    std::cout << res << "\n";
     std::string data(8 + res.size(), '\0');
     *(int *)data.data() = ::htonl(4 + res.size());
     *((int *)data.data() + 1) = type;
