@@ -9,7 +9,7 @@ Dictionary *Dictionary::GetInstance(const std::string zh_filepath, const std::st
     return dic;
 }
 
-std::vector<std::string> Dictionary::query(const std::string &word)
+std::string Dictionary::query(const std::string &word)
 {
     vector<string> res;
     vector<string> single_word = spilt(word);
@@ -68,13 +68,16 @@ std::vector<std::string> Dictionary::query(const std::string &word)
         heap.push(value(minDistance(spilt(name), single_word), freq, name));
     }
 
+    nlohmann::ordered_json js;
+
     for (int i = 0; i < 5 && !heap.empty(); i++)
     {
-        res.push_back(heap.top().word);
+        js["result"].push_back({{"content", heap.top().word}});
+        // res.push_back(heap.top().word);
         heap.pop();
     }
 
-    return res;
+    return js.dump(4);
 }
 
 Dictionary::Dictionary(const std::string &zh_filepath, const std::string &en_filepath)

@@ -14,7 +14,7 @@ class Dictionary
 public:
     static Dictionary *GetInstance(const std::string zh_filepath = "", const std::string en_filepath = "");
 
-    std::vector<std::string> query(const std::string &word);
+    std::string query(const std::string &word);
 
 private:
     Dictionary(const std::string &zh_filepath = "", const std::string &en_filepath = "");

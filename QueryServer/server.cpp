@@ -1,6 +1,9 @@
 #include "./include/tcpserver.h"
 #include "./include/threadpool.h"
 #include "./include/Dictionary.h"
+#include "./include/WebPageQuery.h"
+#include "./include/tcpcontroler.h"
+#include "./include/eventloop.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -10,11 +13,20 @@
 #include <signal.h>
 
 Dictionary *Dictionary::dic = nullptr;
+WebPageQuery webquery("/home/aa/桌面/code/Search_Engine/QueryServer/conf/WebPageGenerator.conf");
 
-void task()
+void task(TcpControler &tcp, int type, const std::string &query)
 {
-    std::cout << pthread_self() << std::endl;
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    // std::cout << pthread_self() << std::endl;
+    //  std::this_thread::sleep_for(std::chrono::seconds(1));
+    std::string res;
+    // 关键词推荐
+    if (type == 1)
+        res = Dictionary::GetInstance()->query(query);
+    else if (type == 2)
+        res = webquery.query(query);
+    std::cout << res << "\n";
+    // loop.appendSendPoll(std::bind(&TcpControler::send, std::ref(tcp), res, res.size()));
 }
 
 TcpServer *server;
@@ -44,9 +56,11 @@ int main()
     // dup(0);
     // dup(0);
 
+    Dictionary::GetInstance("./conf/Chinese.conf",
+                            "./conf/English.conf");
     signal(SIGINT, stop);
-    server = new TcpServer("192.168.2.169", 9190);
-    // server = new TcpServer("127.0.0.1", 9191);
+    // server = new TcpServer("192.168.2.169", 9190);
+    server = new TcpServer("127.0.0.1", 9191);
     pool = new ThreadPool(5, 50000);
     server->start();
     return 0;

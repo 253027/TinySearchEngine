@@ -3,7 +3,11 @@
 #include "../include/channel.h"
 #include "../include/tcpcontroler.h"
 #include "../include/utility.h"
+#include "../include/threadpool.h"
 #include <arpa/inet.h>
+
+extern ThreadPool *pool;
+extern void task(TcpControler &tcp, int type, const std::string &query);
 
 EventLoop::EventLoop(int server_sock) : _server_sock(server_sock), stop(false), _epoll(new Epoll()) {}
 
@@ -51,12 +55,23 @@ void EventLoop::handleReadConnection(int client_sock)
     {
         close(client_sock);
         _connect_map.erase(connection);
-        printf("client closed\n");
+        printf("client closed\n\n");
         return;
     }
     tcp->send(buf);
-    // int len = ntohl(*(int *)buf.data());
-    // printf("message from client:\n");
-    // printf("%d\n", len);
-    // printf("%d\n\n", buf.data() + 4);
+
+    // 添加头部时需要转换为网络字节序！！！
+    //  workflow的协议格式是4字节头部 + 需要的消息，但是发送消息时为了区分报文，故在自定义协议头部加4字节协议用于接受协议消息
+    int len = ntohl(*(int *)buf.data());
+    int type = *((int *)buf.data() + 1);
+    std::string str(buf.data() + 8, len - 4);
+    pool->appendThreadPool(std::bind(&task, *tcp.get(), type, str));
+}
+
+void EventLoop::appendSendPoll(std::function<void()> &&fb)
+{
+    {
+        std::lock_guard<std::mutex> lock(_send_mutex);
+        _send_pool.push_back(std::move(fb));
+    };
 }
