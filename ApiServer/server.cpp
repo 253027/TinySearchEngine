@@ -45,7 +45,6 @@ void PrivateProtocalCallback(PrivateTask *task)
         js["content"] = std::string((char *)body + 4, size - 4);
         std::string res = js.dump();
         http_task->get_resp()->append_output_body(res.data(), res.size());
-        // std::cout << js.dump(4) << "\n";
     }
     else
     {
@@ -82,18 +81,18 @@ void process(WFHttpTask *task)
 
 int main()
 {
-    pid_t pid = fork();
-    if (pid < 0)
-        exit(EXIT_FAILURE);
-    if (pid > 0)
-        exit(EXIT_SUCCESS);
-    if (setsid() < 0)
-        exit(EXIT_FAILURE);
-    for (long x = sysconf(_SC_OPEN_MAX); x >= 0; x--)
-        ::close(x);
-    ::open("/dev/null", O_RDWR);
-    dup(0);
-    dup(0);
+    // pid_t pid = fork();
+    // if (pid < 0)
+    //     exit(EXIT_FAILURE);
+    // if (pid > 0)
+    //     exit(EXIT_SUCCESS);
+    // if (setsid() < 0)
+    //     exit(EXIT_FAILURE);
+    // for (long x = sysconf(_SC_OPEN_MAX); x >= 0; x--)
+    //     ::close(x);
+    // ::open("/dev/null", O_RDWR);
+    // dup(0);
+    // dup(0);
 
     signal(SIGINT, singal_handel);
     WFHttpServer server(&process);
