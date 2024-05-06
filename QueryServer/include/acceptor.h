@@ -23,6 +23,8 @@ private:
     std::shared_ptr<Socket> _socket;
 
     std::shared_ptr<Channel> _server_channel;
+
+    std::shared_ptr<Channel> _event_fd;
 };
 
 #endif //__ACCEPTOR_HEAD_H__

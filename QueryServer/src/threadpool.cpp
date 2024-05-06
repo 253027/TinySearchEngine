@@ -4,7 +4,7 @@ ThreadPool::ThreadPool(int threadnums, int maxqueuenums) : _stop(false), _max_qu
 {
     for (int i = 0; i < threadnums; i++)
     {
-        _threads.emplace_back(std::thread([this]()
+        _threads.emplace_back(std::thread([&]()
                                           {
                                               std::function<void()> task;
                                               while (1)
@@ -35,4 +35,13 @@ void ThreadPool::stop()
             continue;
         x.join();
     }
+}
+
+void ThreadPool::appendThreadPool(std::function<void()> &&task)
+{
+    std::unique_lock<std::mutex> lock(mutx);
+    if (_que.size() >= _max_queue_size || _stop)
+        return;
+    _que.push(std::move(task));
+    condition.notify_one();
 }

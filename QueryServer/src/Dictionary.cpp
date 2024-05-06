@@ -77,7 +77,7 @@ std::string Dictionary::query(const std::string &word)
         heap.pop();
     }
 
-    return js.dump(4);
+    return js.dump();
 }
 
 Dictionary::Dictionary(const std::string &zh_filepath, const std::string &en_filepath)

@@ -11,6 +11,11 @@ Acceptor::Acceptor(std::shared_ptr<EventLoop> &loop, std::shared_ptr<Socket> &so
     std::function<void()> cb = std::bind(&Acceptor::acceptNewConnection, this, _loop, _socket);
     _server_channel->setCallBack(cb);
     _server_channel->enableReading(); // 这里注册,默认模式为边缘触发
+
+    _event_fd.reset(new NewConChanel(_loop, _loop->event_fd));
+    cb = std::bind(&EventLoop::send, std::ref(*_loop.get()));
+    _event_fd->setCallBack(cb);
+    _event_fd->enableReading();
 }
 
 void Acceptor::acceptNewConnection(std::shared_ptr<EventLoop> loop, std::shared_ptr<Socket> socket)

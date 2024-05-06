@@ -31,7 +31,13 @@ public:
 
     void handleReadConnection(int client_sock);
 
-    void appendSendPoll(std::function<void()> &&fb);
+    void appendSendPoll(const std::pair<int, std::string> &data);
+
+    void send();
+    // 通知文件描述符
+    void notify();
+
+    int event_fd;
 
 private:
     bool stop;
@@ -46,7 +52,7 @@ private:
     std::mutex _send_mutex;
 
     // 待发送数据集合
-    std::vector<std::function<void()>> _send_pool;
+    std::vector<std::pair<int, std::string>> _send_pool;
 };
 
 #endif //__EVENTLOOP_HEAD_H__

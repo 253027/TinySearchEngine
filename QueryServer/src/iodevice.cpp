@@ -34,7 +34,7 @@ int IoDevice::send(const std::string &buf)
 {
     int ret;
     size_t len = buf.size(), has_send = 0;
-    while ((ret = ::send(_socket, buf.data() + has_send, std::min(1024UL, len - has_send), 0)) > 0)
+    while ((ret = ::send(_socket, buf.data() + has_send, std::min(1024UL, len - has_send), MSG_DONTWAIT)) > 0)
     {
         if (ret == -1 && (errno & EWOULDBLOCK))
             continue;
