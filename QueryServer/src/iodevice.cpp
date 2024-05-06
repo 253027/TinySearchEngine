@@ -6,7 +6,7 @@ IoDevice::IoDevice(int socket) : _socket(socket) {}
 int IoDevice::boundary_recv(std::string &buf)
 {
     char buffer[1024];
-    int ret = ::recv(_socket, buffer, 8, MSG_WAITALL);
+    int ret = ::recv(_socket, buffer, 4, MSG_WAITALL);
     ERROR_CHECK(ret == -1, "boundary recv error which is -1");
     if (ret == 0)
         return 0;
@@ -24,7 +24,7 @@ int IoDevice::boundary_recv(std::string &buf)
 
 int IoDevice::boundary_send(const std::string &buf)
 {
-    size_t len = buf.size(), has_send = 0;
+    int len = buf.size(), has_send = 0;
     int ret = ::send(_socket, &len, sizeof(len), 0);
     ERROR_CHECK(ret == -1, "boundary send data size error");
     return send(buf);

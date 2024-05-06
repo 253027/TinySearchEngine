@@ -3,6 +3,7 @@
 #include "../include/channel.h"
 #include "../include/tcpcontroler.h"
 #include "../include/utility.h"
+#include <arpa/inet.h>
 
 EventLoop::EventLoop(int server_sock) : _server_sock(server_sock), stop(false), _epoll(new Epoll()) {}
 
@@ -50,6 +51,12 @@ void EventLoop::handleReadConnection(int client_sock)
     {
         close(client_sock);
         _connect_map.erase(connection);
+        printf("client closed\n");
+        return;
     }
-    printf("message from client %s\n", buf.c_str());
+    tcp->send(buf);
+    // int len = ntohl(*(int *)buf.data());
+    // printf("message from client:\n");
+    // printf("%d\n", len);
+    // printf("%d\n\n", buf.data() + 4);
 }
