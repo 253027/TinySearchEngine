@@ -22,7 +22,7 @@ OBJ := $(SRC:.cpp=.o)
 
 # 编译器和编译选项
 CC := g++
-CFLAGS := -g #-fsanitize=address -lpthread
+CFLAGS := #-g -lpthread #-fsanitize=address
 ifdef _DEBUG
     CFLAGS += -D _DEBUG
 endif

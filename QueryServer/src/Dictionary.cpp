@@ -11,7 +11,6 @@ Dictionary *Dictionary::GetInstance(const std::string zh_filepath, const std::st
 
 std::string Dictionary::query(const std::string &word)
 {
-    vector<string> res;
     vector<string> single_word = spilt(word);
     unordered_set<string> zh, en;
     int bitvalue = 0;
@@ -70,12 +69,8 @@ std::string Dictionary::query(const std::string &word)
 
     nlohmann::ordered_json js;
 
-    for (int i = 0; i < 5 && !heap.empty(); i++)
-    {
+    for (int i = 0; i < 5 && !heap.empty(); i++, heap.pop())
         js["result"].push_back({{"content", heap.top().word}});
-        // res.push_back(heap.top().word);
-        heap.pop();
-    }
 
     return js.dump();
 }

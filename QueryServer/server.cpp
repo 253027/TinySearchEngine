@@ -11,22 +11,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <arpa/inet.h>
 
 Dictionary *Dictionary::dic = nullptr;
-WebPageQuery webquery("/home/aa/桌面/code/Search_Engine/QueryServer/conf/WebPageGenerator.conf");
+WebPageQuery webquery("./conf/WebPageGenerator.conf");
 
-void task(TcpControler &tcp, int type, const std::string &query)
+void task(void *eventloop, int socket, int type, const std::string &query)
 {
     // std::cout << pthread_self() << std::endl;
     //  std::this_thread::sleep_for(std::chrono::seconds(1));
     std::string res;
     // 关键词推荐
     if (type == 1)
-        res = Dictionary::GetInstance()->query(query);
+        res = Dictionary::GetInstance()->query(query), type = 100;
     else if (type == 2)
-        res = webquery.query(query);
-    std::cout << res << "\n";
-    // loop.appendSendPoll(std::bind(&TcpControler::send, std::ref(tcp), res, res.size()));
+        res = webquery.query(query), type = 200;
+    std::string data(8 + res.size(), '\0');
+    *(int *)data.data() = ::htonl(4 + res.size());
+    *((int *)data.data() + 1) = type;
+    ::memcpy(data.data() + 8, res.data(), res.size());
+
+    EventLoop *loop = (EventLoop *)eventloop;
+    loop->appendSendPoll(std::make_pair(socket, data));
 }
 
 TcpServer *server;
@@ -59,8 +65,8 @@ int main()
     Dictionary::GetInstance("./conf/Chinese.conf",
                             "./conf/English.conf");
     signal(SIGINT, stop);
-    // server = new TcpServer("192.168.2.169", 9190);
-    server = new TcpServer("127.0.0.1", 9191);
+    server = new TcpServer("192.168.2.169", 9190);
+    // server = new TcpServer("127.0.0.1", 9191);
     pool = new ThreadPool(5, 50000);
     server->start();
     return 0;
