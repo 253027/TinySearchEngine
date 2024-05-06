@@ -1,7 +1,7 @@
 #include "../include/WebPageQuery.h"
 #include "../include/utility.h"
 #include "../include/tinyxml2.h"
-#include <nlohmann/json.hpp>
+#include "../include/json.hpp"
 
 WebPageQuery::WebPageQuery(const std::string &filepath)
     : config(new Configuration(filepath)),

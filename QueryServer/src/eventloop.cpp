@@ -6,6 +6,7 @@
 #include "../include/threadpool.h"
 #include "../include/utility.h"
 #include <sys/eventfd.h>
+#include <iostream>
 #include <arpa/inet.h>
 
 extern ThreadPool *pool;
@@ -89,7 +90,11 @@ void EventLoop::send()
         memo.swap(_send_pool);
     }
     for (auto &x : memo)
+    {
         _connect_map[x.first]->send(x.second);
+        std::cout << "已发送" << "\n";
+    }
+
 }
 
 void EventLoop::notify()
