@@ -69,7 +69,7 @@ std::string Dictionary::query(const std::string &word)
 
     nlohmann::ordered_json js;
 
-    for (int i = 0; i < 5 && !heap.empty(); i++, heap.pop())
+    for (int i = 0; i < 10 && !heap.empty(); i++, heap.pop())
         js["result"].push_back({{"content", heap.top().word}});
 
     return js.dump();

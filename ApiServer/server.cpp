@@ -75,6 +75,7 @@ void process(WFHttpTask *task)
     PrivateTask *tcp_task = NTF::create_client_task(TT_TCP, "tcp://127.0.0.1:9191", 0, PrivateProtocalCallback);
     tcp_task->get_req()->setMessageBody(buf, sizeof(buf));
     tcp_task->user_data = task;
+    tcp_task->set_keep_alive(100000000);
 
     *series_of(task) << tcp_task;
 }
@@ -97,7 +98,7 @@ int main()
     struct WFServerParams params = HTTP_SERVER_PARAMS_DEFAULT;
     /* for safety, limit request size to 8MB. */
     params.request_size_limit = 8 * 1024 * 1024;
-    params.peer_response_timeout = 100;
+    // params.peer_response_timeout = 100;
 
     signal(SIGINT, singal_handel);
     WFHttpServer server(&params, &process);

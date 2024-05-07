@@ -100,6 +100,7 @@ int PrivateProtocal::append(const void *buf, size_t size)
         if (!this->body)
             return -1;
         this->body_received = 0;
+        std::cout << "head: " << this->body_size << "\n";
     }
 
     size_t need = this->body_size - this->body_received;

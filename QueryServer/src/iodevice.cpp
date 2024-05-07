@@ -13,7 +13,7 @@ int IoDevice::boundary_recv(std::string &buf)
     size_t len = *(size_t *)buffer, hash_recv = 0;
     while ((ret = ::recv(_socket, buffer, std::min(1024UL, len - hash_recv), MSG_WAITALL)) > 0)
     {
-        if (ret == -1 && (errno & EAGAIN))
+        if (ret == -1 && (errno == EAGAIN))
             continue;
         else if (ret == -1)
             return -1;
@@ -36,7 +36,7 @@ int IoDevice::send(const std::string &buf)
     size_t len = buf.size(), has_send = 0;
     while ((ret = ::send(_socket, buf.data() + has_send, std::min(1024UL, len - has_send), MSG_DONTWAIT)) > 0)
     {
-        if (ret == -1 && (errno & EWOULDBLOCK))
+        if (ret == -1 && (errno == EWOULDBLOCK))
             continue;
         else if (ret == -1)
             return -1;
@@ -52,7 +52,7 @@ int IoDevice::recv(std::string &buf)
     while ((ret = ::read(_socket, buffer, 1024)) > 0)
     {
         if (ret == -1)
-            return (errno & EAGAIN) ? bytes_read : -1;
+            return (errno == EAGAIN) ? bytes_read : -1;
         buf.append(buffer, ret), bytes_read += ret;
     }
     return bytes_read;
