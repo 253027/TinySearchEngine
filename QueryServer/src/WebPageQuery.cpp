@@ -18,7 +18,7 @@ std::string WebPageQuery::query(const std::string &text)
     if (nums.size() <= 0)
         return "";
     std::vector<int> id(nums.size());
-    std::vector<std::pair<std::string, std::string>> memo;
+    std::vector<std::tuple<std::string, std::string, std::string>> memo;
     std::iota(id.begin(), id.end(), 0);
     sort(id.begin(), id.end(), [&](const int &a, const int &b)
          { return nums[a].second > nums[b].second; });
@@ -46,15 +46,18 @@ std::string WebPageQuery::query(const std::string &text)
         dict_file.read(data.data(), length);
         doc.Parse(data.c_str());
         XMLElement *title = doc.FirstChildElement("doc")->FirstChildElement("title");
+        XMLElement *link = doc.FirstChildElement("doc")->FirstChildElement("url");
         XMLElement *content = doc.FirstChildElement("doc")->FirstChildElement("content");
-        memo.push_back(std::make_pair(title->GetText() ? title->GetText() : "",
-                                      content->GetText() ? content->GetText() : ""));
+        memo.push_back(std::make_tuple(title->GetText() ? title->GetText() : "",
+                                       link->GetText() ? link->GetText() : "",
+                                       content->GetText() ? content->GetText() : ""));
     }
 
     for (int i = 0; i < id.size(); i++)
     {
-        res["result"].push_back({{"title", memo[id[i]].first},
-                                 {"content", memo[id[i]].second}});
+        res["result"].push_back({{"title", std::get<0>(memo[id[i]])},
+                                 {"link", std::get<1>(memo[id[i]])},
+                                 {"content", std::get<2>(memo[id[i]])}});
     }
     return res.dump();
 }
