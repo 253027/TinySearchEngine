@@ -13,7 +13,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <nlohmann/json.hpp>
+#include "./include/json.hpp"
 
 static WFFacilities::WaitGroup wait_group(1);
 using PrivateRequest = PrivateProtocal;
@@ -72,7 +72,7 @@ void process(WFHttpTask *task)
     using NTF = WFNetworkTaskFactory<PrivateRequest, PrivateResponse>;
 
     // PrivateTask *tcp_task = NTF::create_client_task(TT_TCP, "tcp://1.94.134.185:9190", 1, PrivateProtocalCallback);
-    PrivateTask *tcp_task = NTF::create_client_task(TT_TCP, "tcp://127.0.0.1:9191", 0, PrivateProtocalCallback);
+    PrivateTask *tcp_task = NTF::create_client_task(TT_TCP, "tcp://127.0.0.1:9191", 1, PrivateProtocalCallback);
     tcp_task->get_req()->setMessageBody(buf, sizeof(buf));
     tcp_task->user_data = task;
     tcp_task->set_keep_alive(100000000);

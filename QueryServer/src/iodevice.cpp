@@ -10,31 +10,33 @@ int IoDevice::boundary_recv(std::string &buf)
     ERROR_CHECK(ret == -1, "boundary recv error which is -1");
     if (ret == 0)
         return 0;
-    size_t len = *(size_t *)buffer, hash_recv = 0;
-    while ((ret = ::recv(_socket, buffer, std::min(1024UL, len - hash_recv), MSG_WAITALL)) > 0)
+    uint32_t len = *(uint32_t *)buffer, has_recv = 0;
+    while ((ret = ::recv(_socket, buffer, std::min(1024U, len - has_recv), MSG_WAITALL)) > 0)
     {
         if (ret == -1 && (errno == EAGAIN))
             continue;
         else if (ret == -1)
             return -1;
-        buf.append(buffer, ret), hash_recv += ret;
+        buf.append(buffer, ret), has_recv += ret;
     }
-    return hash_recv;
+    return has_recv;
 }
 
 int IoDevice::boundary_send(const std::string &buf)
 {
-    int len = buf.size(), has_send = 0;
+    uint32_t len = buf.size(), has_send = 0;
     int ret = ::send(_socket, &len, sizeof(len), 0);
-    ERROR_CHECK(ret == -1, "boundary send data size error");
-    return send(buf);
+    ERROR_CHECK(ret == -1, "boundary send size error");
+    ret = send(buf);
+    ERROR_CHECK(ret == -1, "boundary send data error");
+    return ret;
 }
 
 int IoDevice::send(const std::string &buf)
 {
     int ret;
-    size_t len = buf.size(), has_send = 0;
-    while ((ret = ::send(_socket, buf.data() + has_send, std::min(1024UL, len - has_send), MSG_DONTWAIT)) > 0)
+    uint32_t len = buf.size(), has_send = 0;
+    while ((ret = ::send(_socket, buf.data() + has_send, std::min(1024U, len - has_send), MSG_DONTWAIT)) > 0)
     {
         if (ret == -1 && (errno == EWOULDBLOCK))
             continue;
