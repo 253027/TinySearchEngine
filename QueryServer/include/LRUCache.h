@@ -16,82 +16,16 @@ class LRUCache
     };
 
 public:
-    LRUCache(int capacity)
-    {
-        head = new DListNode();
-        tail = new DListNode();
-        head->next = tail;
-        tail->pre = head;
-        this->capacity = capacity;
-        len = 0;
-    }
+    LRUCache(int capacity);
 
-    std::string get(std::string key)
-    {
-        if (mp.count(key))
-        {
-            DListNode *temp = new DListNode(key, mp[key]->_val);
-            addNode(temp);
-            delNode(mp[key]);
-            mp[key] = temp;
-            return mp[key]->_val;
-        }
-        return "";
-    }
+    std::string get(std::string key);
 
-    void put(std::string key, std::string value)
-    {
-        if (len < capacity)
-        {
-            if (mp.count(key))
-            {
-                DListNode *temp = new DListNode(key, value);
-                addNode(temp);
-                delNode(mp[key]);
-                mp[key] = temp;
-            }
-            else
-            {
-                len++;
-                DListNode *temp = new DListNode(key, value);
-                addNode(temp);
-                mp[key] = temp;
-            }
-        }
-        else
-        {
-            if (mp.count(key))
-            {
-                DListNode *temp = new DListNode(key, value);
-                addNode(temp);
-                delNode(mp[key]);
-                mp[key] = temp;
-            }
-            else
-            {
-                DListNode *temp = new DListNode(key, value);
-                addNode(temp);
-                delNode(tail->pre);
-                mp[key] = temp;
-            }
-        }
-    }
+    void put(std::string key, std::string value);
 
 private:
-    void addNode(DListNode *temp)
-    {
-        temp->next = head->next;
-        temp->pre = head;
-        head->next->pre = temp;
-        head->next = temp;
-    }
+    void addNode(DListNode *temp);
 
-    void delNode(DListNode *temp)
-    {
-        temp->next->pre = temp->pre;
-        temp->pre->next = temp->next;
-        mp.erase(temp->_key);
-    }
+    void delNode(DListNode *temp);
 
     std::unordered_map<std::string, DListNode *> mp;
 
