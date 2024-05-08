@@ -10,7 +10,7 @@
 #include <arpa/inet.h>
 
 extern ThreadPool *pool;
-extern void task(void *eventloop, int socket, int type, const std::string &query);
+extern void task(int index, void *eventloop, int socket, int type, const std::string &query);
 
 EventLoop::EventLoop(int server_sock) : _server_sock(server_sock), stop(false), _epoll(new Epoll())
 {
@@ -70,7 +70,7 @@ void EventLoop::handleReadConnection(int client_sock)
     int len = ntohl(*(int *)buf.data());
     int type = *((int *)buf.data() + 1);
     std::string str(buf.data() + 8, len - 4);
-    pool->appendThreadPool(std::bind(&task, this, client_sock, type, buf));
+    pool->appendThreadPool(std::bind(&task, std::placeholders::_1, this, client_sock, type, buf));
 }
 
 void EventLoop::appendSendPoll(const std::pair<int, std::string> &data)
@@ -92,9 +92,9 @@ void EventLoop::send()
     for (auto &x : memo)
     {
         _connect_map[x.first]->send(x.second);
-        std::cout << "已发送" << "\n";
+        std::cout << "已发送"
+                  << "\n";
     }
-
 }
 
 void EventLoop::notify()

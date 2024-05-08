@@ -53,7 +53,7 @@ std::string WebPageQuery::query(const std::string &text)
                                        content->GetText() ? content->GetText() : ""));
     }
 
-    for (int i = 0; i < id.size(); i++)
+    for (int i = 0; i < std::min(15, (int)id.size()); i++)
     {
         res["result"].push_back({{"title", std::get<0>(memo[id[i]])},
                                  {"link", std::get<1>(memo[id[i]])},

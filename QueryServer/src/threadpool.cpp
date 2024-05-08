@@ -1,12 +1,14 @@
 #include "../include/threadpool.h"
+#include "../include/CashManger.h"
 
 ThreadPool::ThreadPool(int threadnums, int maxqueuenums) : _stop(false), _max_queue_size(maxqueuenums)
 {
     for (int i = 0; i < threadnums; i++)
     {
-        _threads.emplace_back(std::thread([&]()
+        CashManger::GetInstance()->insert();
+        _threads.emplace_back(std::thread([&, i]()
                                           {
-                                              std::function<void()> task;
+                                              std::function<void(int)> task;
                                               while (1)
                                               {
                                                   {
@@ -17,7 +19,7 @@ ThreadPool::ThreadPool(int threadnums, int maxqueuenums) : _stop(false), _max_qu
                                                       task = _que.front();
                                                       _que.pop();
                                                   }
-                                                  task();
+                                                  task(i);
                                               } }));
     }
 }
@@ -37,7 +39,7 @@ void ThreadPool::stop()
     }
 }
 
-void ThreadPool::appendThreadPool(std::function<void()> &&task)
+void ThreadPool::appendThreadPool(std::function<void(int)> &&task)
 {
     std::unique_lock<std::mutex> lock(mutx);
     if (_que.size() >= _max_queue_size || _stop)

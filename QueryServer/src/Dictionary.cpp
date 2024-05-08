@@ -1,4 +1,5 @@
 #include "../include/Dictionary.h"
+#include "../include/JieBaSpilt.h"
 #include "../include/utility.h"
 using namespace std;
 
@@ -9,7 +10,7 @@ Dictionary *Dictionary::GetInstance(const std::string zh_filepath, const std::st
     return dic;
 }
 
-std::string Dictionary::query(const std::string &word)
+void Dictionary::query(const std::string &word, value_heap &zh_heap, value_heap &en_heap)
 {
     vector<string> single_word = spilt(word);
     unordered_set<string> zh, en;
@@ -52,31 +53,25 @@ std::string Dictionary::query(const std::string &word)
             row_zh.insert(x);
     }
 
-    priority_queue<value, vector<value>, cmp> heap;
     for (auto &x : row_zh)
     {
         string name = std::get<0>(_zh_dict[x]);
         int freq = std::get<1>(_zh_dict[x]);
-        heap.push(value(minDistance(spilt(name), single_word), freq, name));
+        zh_heap.push(value(minDistance(spilt(name), single_word), freq, name));
     }
 
     for (auto &x : row_en)
     {
         string name = std::get<0>(_en_dict[x]);
         int freq = std::get<1>(_en_dict[x]);
-        heap.push(value(minDistance(spilt(name), single_word), freq, name));
+        en_heap.push(value(minDistance(spilt(name), single_word), freq, name));
     }
-
-    nlohmann::ordered_json js;
-
-    for (int i = 0; i < 10 && !heap.empty(); i++, heap.pop())
-        js["result"].push_back({{"content", heap.top().word}});
-
-    return js.dump();
 }
 
 Dictionary::Dictionary(const std::string &zh_filepath, const std::string &en_filepath)
-    : zh_config(new Configuration(zh_filepath)), en_config(new Configuration(en_filepath))
+    : zh_config(new Configuration(zh_filepath)),
+      en_config(new Configuration(en_filepath)),
+      _spilt(new JieBaSpilt(zh_filepath))
 {
     createIndexDictionary(en_config);
 
@@ -88,6 +83,20 @@ Dictionary::Dictionary(const std::string &zh_filepath, const std::string &en_fil
 }
 
 Dictionary::~Dictionary() {}
+
+std::string Dictionary::query(const std::string &word)
+{
+    value_heap zh_heap, en_heap;
+    vector<string> nums = _spilt->cut(word);
+    for (auto &x : nums)
+        query(x, zh_heap, en_heap);
+    nlohmann::ordered_json js;
+    for (int i = 0; i < 5 && !zh_heap.empty(); i++, zh_heap.pop())
+        js["result"].push_back({{"content", zh_heap.top().word}});
+    for (int i = 0; i < 5 && !en_heap.empty(); i++, en_heap.pop())
+        js["result"].push_back({{"content", en_heap.top().word}});
+    return js.dump();
+}
 
 std::vector<std::string> Dictionary::spilt(const std::string &s)
 {

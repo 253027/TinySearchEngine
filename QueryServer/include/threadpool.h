@@ -16,7 +16,7 @@ public:
 
     void stop();
 
-    void appendThreadPool(std::function<void()> &&task);
+    void appendThreadPool(std::function<void(int)> &&task);
 
     // template <class F, class... Args>
     // auto appendThreadPool(F &&f, Args &&...args) -> std::future<typename std::result_of<F(Args...)>::type>;
@@ -32,7 +32,7 @@ private:
 
     std::condition_variable condition;
 
-    std::queue<std::function<void()>> _que;
+    std::queue<std::function<void(int)>> _que;
 };
 
 // template <class F, class... Args>

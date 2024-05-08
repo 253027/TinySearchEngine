@@ -6,34 +6,39 @@
 
 class LRUCache
 {
-    struct DListNode
-    {
-        std::string _key, _val;
-        DListNode *pre;
-        DListNode *next;
-        DListNode() : _val(""), pre(nullptr), next(nullptr) {}
-        DListNode(std::string key, std::string val) : _key(key), _val(val), pre(nullptr), next(nullptr) {}
-    };
-
 public:
     LRUCache(int capacity);
+
+    ~LRUCache();
+
+    LRUCache &operator=(const LRUCache &val);
 
     std::string get(std::string key);
 
     void put(std::string key, std::string value);
 
 private:
-    void addNode(DListNode *temp);
-
-    void delNode(DListNode *temp);
-
-    std::unordered_map<std::string, DListNode *> mp;
-
-    DListNode *head, *tail;
+    struct listnode
+    {
+        std::string key, value;
+        listnode *prev, *next;
+        listnode(std::string _key, std::string _value) : key(_key), value(_value), prev(nullptr), next(nullptr) {}
+    };
 
     int capacity;
 
-    int len;
+    std::unordered_map<std::string, listnode *> hash;
+
+    listnode *prehead, *backend;
+
+private:
+    void RemoveNode(listnode *target);
+
+    void AddToHead(listnode *target);
+
+    void MoveToHead(listnode *target);
+
+    listnode *RemoveTail();
 };
 
 /**

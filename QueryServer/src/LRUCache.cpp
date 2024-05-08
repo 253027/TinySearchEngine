@@ -2,62 +2,96 @@
 
 LRUCache::LRUCache(int capacity)
 {
-    head = new DListNode();
-    tail = new DListNode();
-    head->next = tail;
-    tail->pre = head;
     this->capacity = capacity;
-    len = 0;
+    prehead = new listnode("", "");
+    backend = new listnode("", "");
+    prehead->next = backend;
+    backend->prev = prehead;
+}
+
+LRUCache::~LRUCache()
+{
+    for (auto &x : hash)
+        delete x.second;
+    delete prehead;
+    delete backend;
+}
+
+LRUCache &LRUCache::operator=(const LRUCache &val)
+{
+    if (this == &val)
+        return *this;
+    for (auto &x : hash)
+        delete x.second;
+    prehead->next = backend;
+    backend->prev = prehead;
+    hash.clear();
+    for (listnode *p = val.backend; p != val.prehead; p = p->prev)
+    {
+        listnode *temp = new listnode(p->key, p->value);
+        temp->next = this->prehead->next;
+        this->prehead->next->prev = temp;
+        this->prehead->next = temp;
+        temp->prev = this->prehead;
+        hash[p->key] = temp;
+    }
+    return *this;
 }
 
 std::string LRUCache::get(std::string key)
 {
-    if (mp.count(key))
-    {
-        DListNode *temp = new DListNode(key, mp[key]->_val);
-        addNode(temp);
-        delNode(mp[key]);
-        mp[key] = temp;
-        return mp[key]->_val;
-    }
-    return "";
+    if (!hash.count(key))
+        return "-1";
+    listnode *temp = hash[key];
+    MoveToHead(temp);
+    return temp->value;
 }
 
 void LRUCache::put(std::string key, std::string value)
 {
-    if (len < capacity)
+    if (hash.count(key))
     {
-        DListNode *temp = new DListNode(key, value);
-        addNode(temp);
-        if (mp.count(key))
-            delNode(mp[key]);
-        else
-            len++;
-        mp[key] = temp;
+        listnode *temp = hash[key];
+        temp->value = value;
+        MoveToHead(temp);
     }
     else
     {
-        DListNode *temp = new DListNode(key, value);
-        addNode(temp);
-        if (mp.count(key))
-            delNode(mp[key]);
-        else
-            delNode(tail->pre);
-        mp[key] = temp;
+        listnode *temp = new listnode(key, value);
+        AddToHead(temp), capacity--, hash[key] = temp;
+        if (capacity < 0)
+        {
+            capacity++;
+            temp = RemoveTail();
+            hash.erase(temp->key);
+            delete temp;
+        }
     }
 }
 
-void LRUCache::addNode(DListNode *temp)
+void LRUCache::RemoveNode(listnode *target)
 {
-    temp->next = head->next;
-    temp->pre = head;
-    head->next->pre = temp;
-    head->next = temp;
+    target->prev->next = target->next;
+    target->next->prev = target->prev;
 }
 
-void LRUCache::delNode(DListNode *temp)
+void LRUCache::AddToHead(listnode *target)
 {
-    temp->next->pre = temp->pre;
-    temp->pre->next = temp->next;
-    mp.erase(temp->_key);
+    target->next = prehead->next;
+    target->next->prev = target;
+    target->prev = prehead;
+    prehead->next = target;
+}
+
+void LRUCache::MoveToHead(listnode *target)
+{
+    RemoveNode(target);
+    AddToHead(target);
+}
+
+LRUCache::listnode *LRUCache::RemoveTail()
+{
+    listnode *temp = backend->prev;
+    RemoveNode(temp);
+    return temp;
 }
