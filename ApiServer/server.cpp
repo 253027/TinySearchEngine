@@ -71,8 +71,8 @@ void process(WFHttpTask *task)
 
     using NTF = WFNetworkTaskFactory<PrivateRequest, PrivateResponse>;
 
-    // PrivateTask *tcp_task = NTF::create_client_task(TT_TCP, "tcp://1.94.134.185:9190", 1, PrivateProtocalCallback);
-    PrivateTask *tcp_task = NTF::create_client_task(TT_TCP, "tcp://127.0.0.1:9191", 1, PrivateProtocalCallback);
+    PrivateTask *tcp_task = NTF::create_client_task(TT_TCP, "tcp://1.94.134.185:9190", 1, PrivateProtocalCallback);
+    // PrivateTask *tcp_task = NTF::create_client_task(TT_TCP, "tcp://127.0.0.1:9191", 1, PrivateProtocalCallback);
     tcp_task->get_req()->setMessageBody(buf, sizeof(buf));
     tcp_task->user_data = task;
     tcp_task->set_keep_alive(100000000);
@@ -82,18 +82,18 @@ void process(WFHttpTask *task)
 
 int main()
 {
-    //     pid_t pid = fork();
-    //     if (pid < 0)
-    //         exit(EXIT_FAILURE);
-    //     if (pid > 0)
-    //         exit(EXIT_SUCCESS);
-    //     if (setsid() < 0)
-    //         exit(EXIT_FAILURE);
-    //     for (long x = sysconf(_SC_OPEN_MAX); x >= 0; x--)
-    //         ::close(x);
-    //     ::open("/dev/null", O_RDWR);
-    //     dup(0);
-    //     dup(0);
+    pid_t pid = fork();
+    if (pid < 0)
+        exit(EXIT_FAILURE);
+    if (pid > 0)
+        exit(EXIT_SUCCESS);
+    if (setsid() < 0)
+        exit(EXIT_FAILURE);
+    for (long x = sysconf(_SC_OPEN_MAX); x >= 0; x--)
+        ::close(x);
+    ::open("/dev/null", O_RDWR);
+    dup(0);
+    dup(0);
 
     struct WFServerParams params = HTTP_SERVER_PARAMS_DEFAULT;
     /* for safety, limit request size to 8MB. */

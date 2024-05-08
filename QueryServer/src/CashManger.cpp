@@ -11,7 +11,7 @@ CashManger *CashManger::GetInstance()
 
 void CashManger::insert()
 {
-    std::shared_ptr<Cache> cach(new Cache(1000));
+    std::shared_ptr<Cache> cach(new Cache(3));
     memo.push_back(cach);
 }
 
