@@ -25,7 +25,7 @@ $(shell mkdir -p $(OBJ_DIR))
 
 # 编译器和编译选项
 CC := g++
-CFLAGS := #-g -lpthread #-fsanitize=address
+CFLAGS := -g #-lpthread #-fsanitize=address
 ifdef _DEBUG
     CFLAGS += -D _DEBUG
 endif

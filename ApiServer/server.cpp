@@ -5,20 +5,29 @@
 #include <workflow/HttpMessage.h>
 #include <workflow/WFConnection.h>
 #include <workflow/Workflow.h>
+#include <workflow/TLVMessage.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <signal.h>
 #include <iostream>
 #include <string>
-#include "./include/utility.h"
-#include "./include/PrivatePtotocal.h"
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
+#include "./include/utility.h"
 #include "./include/json.hpp"
+#include <spdlog/spdlog.h>
 
 static WFFacilities::WaitGroup wait_group(1);
-using PrivateRequest = PrivateProtocal;
-using PrivateResponse = PrivateProtocal;
-using PrivateTask = WFNetworkTask<PrivateRequest, PrivateResponse>;
+
+using WFTLVServer = WFServer<protocol::TLVRequest, protocol::TLVResponse>;
+using WFTLVTask = WFNetworkTask<protocol::TLVRequest, protocol::TLVResponse>;
+using tlv_callback_t = std::function<void(WFTLVTask *)>;
+
+WFTLVTask *create_tlv_task(const char *host, unsigned short port, tlv_callback_t callback)
+{
+    auto *task = WFNetworkTaskFactory<protocol::TLVRequest, protocol::TLVResponse>::create_client_task(TT_TCP, host, port, 0, std::move(callback));
+    task->set_keep_alive(60 * 1000);
+    return task;
+}
 
 void singal_handel(int sig)
 {
@@ -27,24 +36,23 @@ void singal_handel(int sig)
     wait_group.done();
 }
 
-void PrivateProtocalCallback(PrivateTask *task)
+void PrivateProtocalCallback(WFTLVTask *task)
 {
     int state = task->get_state();
     int error = task->get_error();
 
-    PrivateProtocal *resp = task->get_resp();
-    void *body;
-    size_t size;
-    resp->getMessageBody(&body, &size);
+    protocol::TLVRequest *resp = task->get_resp();
+
+    std::string *value = resp->get_value();
+    spdlog::info("回调函数执行 类型 {0:d}", resp->get_type());
 
     if (state == WFT_STATE_SUCCESS)
     {
         WFHttpTask *http_task = (WFHttpTask *)task->user_data;
-        nlohmann::ordered_json js;
-        js["id"] = std::to_string(*(int *)body);
-        js["content"] = std::string((char *)body + 4, size - 4);
-        std::string res = js.dump();
-        http_task->get_resp()->append_output_body(res.data(), res.size());
+        nlohmann::ordered_json json;
+        json["id"] = std::to_string(resp->get_type());
+        json["content"] = *resp->get_value();
+        http_task->get_resp()->append_output_body(json.dump().data(), json.dump().size());
     }
     else
     {
@@ -64,18 +72,22 @@ void process(WFHttpTask *task)
     nlohmann::json js = nlohmann::json::parse(message);
     std::string id, content;
     id = js["id"], content = js["content"];
-    char buf[(4 + content.size())];
 
-    *(int *)buf = std::stoi(id);
-    ::memcpy(buf + 4, content.data(), content.size());
+    spdlog::info("content {0:d}", content.size());
 
-    using NTF = WFNetworkTaskFactory<PrivateRequest, PrivateResponse>;
+    // PrivateTask *tcp_task = NTF::create_client_task(TT_TCP, "tcp://1.94.134.185:9190", 1, PrivateProtocalCallback);
+    WFTLVTask *tcp_task = create_tlv_task("127.0.0.1", 9191, PrivateProtocalCallback);
+    spdlog::info("任务创建成功 {0:d}", content.size());
 
-    //PrivateTask *tcp_task = NTF::create_client_task(TT_TCP, "tcp://1.94.134.185:9190", 1, PrivateProtocalCallback);
-    PrivateTask *tcp_task = NTF::create_client_task(TT_TCP, "tcp://127.0.0.1:9191", 1, PrivateProtocalCallback);
-    tcp_task->get_req()->setMessageBody(buf, sizeof(buf));
+    tcp_task->get_req()->set_value(content); // 14
+    if (id == "1")
+        tcp_task->get_req()->set_type(1);
+    else if (id == "2")
+        tcp_task->get_req()->set_type(2);
+    else
+        tcp_task->get_req()->set_type(404);
+
     tcp_task->user_data = task;
-    tcp_task->set_keep_alive(100000000);
 
     *series_of(task) << tcp_task;
 }

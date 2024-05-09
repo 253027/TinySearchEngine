@@ -34,13 +34,13 @@ void task(int index, void *eventloop, int socket, int type, const std::string &q
             res = webquery.query(query), type = 200;
         std::cout << "无缓存";
     }
+
     // cache.insert(query, res);
-    std::cout << "查询"
-              << "\n";
-    std::cout << index << " 取得 " << res.size() << "\n";
+    std::cout << "查询" << "\n";
+    std::cout << "线程" << index << " 取得 " << res.size() << " 字节" << "\n";
     std::string data(8 + res.size(), '\0');
-    *(int *)data.data() = ::htonl(4 + res.size());
-    *((int *)data.data() + 1) = type;
+    *((int *)data.data()) = ::htonl(type);
+    *((int *)data.data() + 1) = ::htonl(res.size());
     ::memcpy(data.data() + 8, res.data(), res.size());
 
     EventLoop *loop = (EventLoop *)eventloop;
@@ -55,8 +55,7 @@ void update(int sig)
     {
         CashManger::GetInstance()->get(i).swap();
     }
-    std::cout << "第" << ++swap_size << "次交换"
-              << "\n";
+    std::cout << "第" << ++swap_size << "次交换" << "\n";
     alarm(15);
 }
 

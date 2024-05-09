@@ -65,12 +65,13 @@ void EventLoop::handleReadConnection(int client_sock)
         return;
     }
     // tcp->send(buf);
+
     // 添加头部时需要转换为网络字节序！！！
     //  workflow的协议格式是4字节头部 + 需要的消息，但是发送消息时为了区分报文，故在自定义协议头部加4字节协议用于接受协议消息
-    int len = ntohl(*(int *)buf.data());
-    int type = *((int *)buf.data() + 1);
-    std::string str(buf.data() + 8, len - 4);
-    pool->appendThreadPool(std::bind(&task, std::placeholders::_1, this, client_sock, type, buf));
+    int type = ntohl(*(int *)buf.data());
+    int len = ntohl(*((int *)buf.data() + 1));
+    std::string str(buf.data() + 8, len);
+    pool->appendThreadPool(std::bind(&task, std::placeholders::_1, this, client_sock, type, str));
 }
 
 void EventLoop::appendSendPoll(const std::pair<int, std::string> &data)
@@ -92,8 +93,7 @@ void EventLoop::send()
     for (auto &x : memo)
     {
         _connect_map[x.first]->send(x.second);
-        std::cout << "已发送"
-                  << "\n";
+        std::cout << "已发送" << "\n";
     }
 }
 
