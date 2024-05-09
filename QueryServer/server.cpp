@@ -17,7 +17,7 @@
 
 Dictionary *Dictionary::dic = nullptr;
 CashManger *CashManger::_instance = nullptr;
-WebPageQuery webquery("./conf/WebPageGenerator.conf");
+WebPageQuery webquery("./conf/WebPage.conf");
 
 void task(int index, void *eventloop, int socket, int type, const std::string &query)
 {
